@@ -1,9 +1,9 @@
-import { QuerySnapshot } from 'firebase/firestore';
-import React, { useEffect } from 'react'
+import React from 'react'
 import { StyleSheet, Text, View, TextInput, Button, AsyncStorageStatic} from 'react-native';
+
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import {getFirestore, collection, getDocs} from "firebase/firestore/lite";
+import { getDatabase, ref, onValue, child, push, update } from "firebase/database";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -20,22 +20,53 @@ const firebaseConfig = {
   measurementId: "G-2FS24FB712"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = getDatabase(app);
 
-// Get a list of cities
 
-async function getDias(db){
-  const DiasCol = collection(db, 'Dias');
-  const DiasSnapshot = await getDocs(DiasCol);
-  const cityList = DiasSnapshot.docs.map(doc => doc.data());
-  return cityList
+// Leemos firebase
+const starCountRef = ref(db, '/' + "Lunes");
+onValue(starCountRef, (snapshot) => {
+  const data = snapshot.val();
+  console.log(data);
+});
+
+onValue(starCountRef, (snapshot) => {
+  const data = snapshot.val();
+  console.log(data);
+});
+// Actualizar Firebase
+
+function writeNewPost(horaIngreso,horaEgreso) {
+  const db = getDatabase();
+  const total = horaEgreso - horaIngreso;
+
+  // A post entry.
+  const postData = {
+    ingreso: horaIngreso,
+    egreso: horaEgreso,
+    total: total
+  };
+
+  // Get a key for a new Post.
+  const newPostKey = push(child(ref(db), 'Lunes')).key;
+
+  // Write the new post's data simultaneously in the posts list and the user's post list.
+  const updates = {};
+  updates['/Lunes'] = postData;
+  return update(ref(db), updates);
 }
 
+writeNewPost(8,18);
+
+onValue(starCountRef, (snapshot) => {
+  const data = snapshot.val();
+  console.log(data.ingreso);
+});
 
 export default function App() {
-  
-  console.log(getDias(db));
+
 
   const [number1, n1] = React.useState(null);
   const [number2, n2] = React.useState(null);
